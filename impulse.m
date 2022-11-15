@@ -22,7 +22,7 @@ subplot(2,1,2)
 indexOf1000Hz = floor(length(P1)*(1000/(Fs/2)));
 normFactor = P1(indexOf1000Hz);
 P1 = P1/normFactor;
-X_OCT = smooth_spectrum(P1,f,3);
+X_OCT = smoothSpectrum(P1,f,3);
 loglog(f,P1) %plot amplitude spectrum
 title("Single-Sided Amplitude Spectrum of X(t), log")
 xlabel("f (Hz)")
