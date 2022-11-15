@@ -1,6 +1,6 @@
 %x = readcell("Nov 9 11_00_58_no_intro.txt");
 % x signal, Fs sampling frequency
-[x, Fs] = audioread("Nov 9 10_44_41.wav");                  
+[x, Fs] = audioread("speaker-front-impulse.wav");                  
 T = 1/Fs;             % Sampling period       
 L = length(x);        % Length of signal
 t = (0:L-1)*T;        % Time vector
