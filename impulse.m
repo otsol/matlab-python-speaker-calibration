@@ -13,16 +13,21 @@ P1(2:end-1) = 2*P1(2:end-1);
 
 f = Fs*(0:(L/2))/L;
 subplot(2,1,1)
-plot(f,P1) 
+plot(f,P1)
 title("Single-Sided Amplitude Spectrum of X(t)")
 xlabel("f (Hz)")
 ylabel("|P1(f)|")
 
 subplot(2,1,2)
-plot(log10(f),log10(P1))
-title("Single-Sided Amplitude Spectrum of X(t)")
+indexOf1000Hz = floor(length(P1)*(1000/(Fs/2)));
+normFactor = P1(indexOf1000Hz);
+P1 = P1/normFactor;
+X_OCT = smooth_spectrum(P1,f,3);
+loglog(f,P1) %plot amplitude spectrum
+title("Single-Sided Amplitude Spectrum of X(t), log")
 xlabel("f (Hz)")
 ylabel("|P1(f)|")
+xlim([10 21000])
 
 
 %y = cell2mat(x);
