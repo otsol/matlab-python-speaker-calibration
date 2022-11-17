@@ -13,9 +13,9 @@ speakerMaxFreq=20000; %Maximum frequency speaker is capable of playing
 maxBoostPower=10; %Maximum multiplier for quiet frequencies
 %end parameters
 [x, Fs] = audioread("speaker-front-impulse.wav");
-
+%x = x.^-1;
 [test, fs_test] = audioread('testaudio.wav');
-
+test = test(1:60000,:);
 subplot(5,1,1)
 plot(x)
 title("Speaker impulse response")
@@ -27,6 +27,14 @@ L = length(x);        % Length of signal
 t = (0:L-1)*T;        % Time vector
 
 Y = fft(x);           % Fourier transform
+Y = Y.^-1;
+indexOf1000Hz = floor(length(x)/2/24);
+normFactor = Y(indexOf1000Hz);
+normFactor = abs(normFactor);
+
+
+idx = abs(Y)>(normFactor*maxBoostPower);
+Y(idx) = normFactor*maxBoostPower;
 subplot(5,1,2)
 loglog(abs(Y))
 title("fft(x), loglog")
@@ -78,9 +86,9 @@ disp("Calculating IFFT...")
 %y = ifft(P1_smoothed);
 %f2 = Fs*(0:L-1)/L;
 %Y_smoothed = smoothSpectrum(abs(Y),f2',30);
-y=ifft(-Y);
+y=ifft(Y);
 %y=y.*(1/max(y));
-y=200.*y;
+y=0.00001.*y;
 disp("IFFT calculation done")
 
 subplot(5,1,5)
@@ -90,6 +98,7 @@ title("Modified speaker impulse response")
 %calculate result audio
 disp("Calculating result...")
 result = [conv(y,test(:,1)) conv(y,test(:,2))];
+result = result * (1/max(max(result)));
 disp("Result calculation done")
 
 disp("Play original audio...")
