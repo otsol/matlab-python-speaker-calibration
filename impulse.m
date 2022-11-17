@@ -56,7 +56,8 @@ xlim([speakerMinFreq speakerMaxFreq])
 axis padded
 
 disp("Smoothing spectrum...")
-P1_smoothed = smoothSpectrum(P1,f',30);
+%P1_smoothed = smoothSpectrum(P1,f',30);
+P1_smoothed=P1;
 disp("Smoothing spectrum done")
 %process spectrum
 idx = P1_smoothed<(1/maxBoostPower);
@@ -75,6 +76,8 @@ axis padded
 
 disp("Calculating IFFT...")
 %y = ifft(P1_smoothed);
+%f2 = Fs*(0:L-1)/L;
+%Y_smoothed = smoothSpectrum(abs(Y),f2',30);
 y=ifft(-Y);
 %y=y.*(1/max(y));
 y=200.*y;
