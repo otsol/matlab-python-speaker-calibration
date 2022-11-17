@@ -15,7 +15,7 @@ maxBoostPower=10; %Maximum multiplier for quiet frequencies
 [x, Fs] = audioread("speaker-front-impulse.wav");
 %x = x.^-1;
 [test, fs_test] = audioread('testaudio.wav');
-test = test(1:60000,:);
+%test = test(1:60000,:);
 subplot(5,1,1)
 plot(x)
 title("Speaker impulse response")
