@@ -14,8 +14,8 @@ maxBoostPower=10; %Maximum multiplier for quiet frequencies
 %end parameters
 [x, Fs] = audioread("speaker-front-impulse.wav");
 %x = x.^-1;
-[test, fs_test] = audioread('testaudio.wav');
-%test = test(1:60000,:);
+[test, fs_test] = audioread('testaudio/testaudio.wav');
+test = test(1:60000,:);
 subplot(5,1,1)
 plot(x)
 title("Speaker impulse response")
@@ -28,16 +28,22 @@ t = (0:L-1)*T;        % Time vector
 
 Y = fft(x);           % Fourier transform
 Y = Y.^-1;
-indexOf1000Hz = floor(length(x)/2/24);
+indexOf1000Hz = floor(length(x)/2/((Fs/2)/1000));
 normFactor = Y(indexOf1000Hz);
 normFactor = abs(normFactor);
 
 
 idx = abs(Y)>(normFactor*maxBoostPower);
 Y(idx) = normFactor*maxBoostPower;
+Y()
+%MinFreqIndex = floor(length(x)/2/((Fs/2)/speakerMinFreq));
+%Y(1:MinFreqIndex)=0; %set values below speaker freq response to zero
+%Y(length(Y)-MinFreqIndex:end)=0; %set values below speaker freq response to zero
+%Y(floor(length(x)/2/(speakerMaxFreq/(Fs/2))):end)=0; %set values above speaker freq response to zero
+
 subplot(5,1,2)
-loglog(abs(Y))
-title("fft(x), loglog")
+plot(abs(Y))
+title("abs(fft(x))")
 
 P2 = abs(Y/L);        % Power spectrum
 P1 = P2(1:L/2+1);     % Single-sided spectrum
@@ -89,8 +95,8 @@ disp("Calculating IFFT...")
 y=ifft(Y);
 %y=y.*(1/max(y));
 y=0.00001.*y;
+y=y(1:2500);
 disp("IFFT calculation done")
-
 subplot(5,1,5)
 plot(y)
 title("Modified speaker impulse response")
