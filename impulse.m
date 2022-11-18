@@ -10,12 +10,15 @@ close all;
 %parameters
 speakerMinFreq=53; %Minimum frequency speaker is capable of playing
 speakerMaxFreq=20000; %Maximum frequency speaker is capable of playing
-maxBoostPower=10; %Maximum multiplier for quiet frequencies
+maxBoostPower=3; %Maximum multiplier for quiet frequencies
 %end parameters
 [x, Fs] = audioread("speaker-front-impulse.wav");
 %x = x.^-1;
-[test, fs_test] = audioread('testaudio/testaudio.wav');
-test = test(1:60000,:);
+[test, fs_test] = audioread('testaudio/sweep.wav');
+test=repmat(test,1,2);
+%t = 0:1/1e3:4;
+%test = chirp(t,40,4,4000);
+%test = test(1:100000,:);
 subplot(5,1,1)
 plot(x)
 title("Speaker impulse response")
@@ -27,9 +30,10 @@ L = length(x);        % Length of signal
 t = (0:L-1)*T;        % Time vector
 
 Y = fft(x);           % Fourier transform
-cool1 = real(Y);
-cool2 = imag(Y);
-Y = Y;
+%cool1 = real(Y);
+%cool2 = imag(Y);
+%Y = cool1+cool2*i;
+Y = Y.^-1;
 indexOf1000Hz = floor(length(x)/2/((Fs/2)/1000));
 normFactor = Y(indexOf1000Hz);
 normFactor = abs(normFactor);
@@ -37,6 +41,9 @@ normFactor = abs(normFactor);
 
 idx = abs(Y)>(normFactor*maxBoostPower);
 Y(idx) = normFactor*maxBoostPower;
+test1 = real(Y(50600:80400));
+test2 = imag(Y(50600:80400));
+%Y(50600:80400)=test2*1i-0.5*test1;
 %Y(50600:80400)=0.99*Y(50600:80400);
 %Y=Y(65537:end);
 %MinFreqIndex = floor(length(x)/2/((Fs/2)/speakerMinFreq));
@@ -98,7 +105,7 @@ disp("Calculating IFFT...")
 y=ifft(Y);
 %y=y.*(1/max(y));
 y=0.00001.*y;
-%y=y(1:2500);
+y=y(1:2500);
 disp("IFFT calculation done")
 subplot(5,1,5)
 plot(y)
@@ -106,9 +113,27 @@ title("Modified speaker impulse response")
 
 %calculate result audio
 disp("Calculating result...")
+test = [conv(x,test(:,1)) conv(x,test(:,2))];
 result = [conv(y,test(:,1)) conv(y,test(:,2))];
 result = result * (1/max(max(result)));
+result = bandpass(result,[speakerMinFreq speakerMaxFreq],Fs);
 disp("Result calculation done")
+
+figure(2);
+subplot(2,1,1)
+M = 200;
+L = 11;
+g = bartlett(M);
+Ndft = 1024;
+
+spectrogram(test(:,1),g,L,Ndft,fs_test)
+subplot(2,1,2)
+M = 200;
+L = 11;
+g = bartlett(M);
+Ndft = 1024;
+
+spectrogram(result(:,1),g,L,Ndft,fs_test)
 
 disp("Play original audio...")
 %play original sound
