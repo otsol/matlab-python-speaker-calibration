@@ -33,7 +33,7 @@ Y = fft(x);           % Fourier transform
 %cool1 = real(Y);
 %cool2 = imag(Y);
 %Y = cool1+cool2*i;
-Y = Y.^-1;
+%Y = Y.^-1;
 indexOf1000Hz = floor(length(x)/2/((Fs/2)/1000));
 normFactor = Y(indexOf1000Hz);
 normFactor = abs(normFactor);
@@ -44,7 +44,7 @@ Y(idx) = normFactor*maxBoostPower;
 %test1 = real(Y(50600:80400));
 %test2 = imag(Y(50600:80400));
 %Y(50600:80400)=test2*1i-0.5*test1;
-%Y(50600:80400)=0.99*Y(50600:80400);
+Y(50600:80400)=0.99*Y(50600:80400);
 %Y=Y(65537:end);
 %MinFreqIndex = floor(length(x)/2/((Fs/2)/speakerMinFreq));
 %Y(1:MinFreqIndex)=0; %set values below speaker freq response to zero
@@ -52,8 +52,8 @@ Y(idx) = normFactor*maxBoostPower;
 %Y(floor(length(x)/2/(speakerMaxFreq/(Fs/2))):end)=0; %set values above speaker freq response to zero
 
 subplot(5,1,2)
-plot(abs(Y))
-title("abs(fft(x))")
+semilogx(mag2db(abs(Y)))
+title("mag2db abs(fft(x))")
 
 P2 = abs(Y/L);        % Power spectrum
 P1 = P2(1:L/2+1);     % Single-sided spectrum
