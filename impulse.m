@@ -121,6 +121,8 @@ disp("Calculating IFFT...")
 %y = ifft(P1_smoothed);
 %f2 = Fs*(0:L-1)/L;
 %Y_smoothed = smoothSpectrum(abs(Y),f2',30);
+X_norm=db2mag(X_norm);
+x_norm=ifft(X_norm);
 y=ifft(X);
 y=y.*(1/max(y));
 %y=y.*(1/max(y));
@@ -136,7 +138,7 @@ title("X-X_inverted")
 
 %calculate result audio
 disp("Calculating result...")
-test_impulse = [conv(test(:,1),x) conv(test(:,2),x)]; %conv testaudio with measured freq response
+test_impulse = [conv(test(:,1),x_norm) conv(test(:,2),x_norm)]; %conv testaudio with measured freq response
 test_impulse = test * (1/max(max(test)));
 test_corrected = [conv(test_impulse(:,1),y) conv(test_impulse(:,2),y)]; %conv again with room correction filter
 test_corrected = test_corrected * (1/max(max(test_corrected)));
