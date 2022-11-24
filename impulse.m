@@ -90,7 +90,7 @@ X_norm_mag=db2mag(X_db_norm);
 X_inverted_mag=db2mag(X_db_inverted);
 
 x_resp_norm=ifft(X_norm_mag);
-x_resp_mod=ifft(X);
+x_resp_mod=ifft(X_inverted_mag);
 %x_resp_mod=x_resp_mod./max(x_resp_norm);
 x_resp_mod(length(x_resp_mod)/2:end)=0; %delete right half of unstable impulse response
 %y=y.*(1/max(y));
