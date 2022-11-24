@@ -1,0 +1,33 @@
+Pseudo code
+Algorithm norm is
+	v: Vector x in dB scale
+	i: index that that is used as a reference, will be 0 (in dB scale)
+	output: Vector y that is the vector x normalized to
+	
+	y = v - v(i)
+	
+	return y
+
+
+algorithm equalization-inverse-frequency-response is
+	input: Vector x, which is an impulse response
+	input: Fs that is the sampling frequency of the impulse response
+	input: norm_f that is the reference frequency used for normalization
+	output: Vector y that is the inverse of x in frequency domain
+
+
+	
+	X=fft(x)
+	X=abs(X)
+	X_db=20 * log_10(X)
+	i = floor(length(X)/2/((Fs/2)/f_norm));
+	X_db_norm = norm(X_db, i)
+	
+	(Note: X_db_norm+(-X_db_norm)= [0,0,0,0,....,0,0]
+
+	X_inverted_norm = 10^( (-X_db_norm) )
+	y = ifft(X_inverted_norm)
+
+	return y
+	
+	
