@@ -5,16 +5,19 @@ Projektityö: Kaiuttimien kalibrointi
 clear;
 clc;
 close all;
+
+%[x, Fs] = audioread("speaker-front-impulse.wav");
+[x, Fs] = audioread("inf_beta50_couchsit_impulse.wav");
+[test, fs_test] = audioread('testaudio/testaudio.wav');
+test = test(1:80000,:); %shorten test audio
+
 %parameters
 speakerMinFreq=53; %Minimum frequency speaker is capable of playing
 speakerMaxFreq=20000; %Maximum frequency speaker is capable of playing
 maxBoostPowerdB=3; %Maximum multiplier for quiet frequencies
 numberOfPlots1=7;
+fftSize=length(x);
 %end parameters
-%[x, Fs] = audioread("speaker-front-impulse.wav");
-[x, Fs] = audioread("inf_beta50_couchsit_impulse.wav");
-[test, fs_test] = audioread('testaudio/testaudio.wav');
-test = test(1:80000,:); %shorten test audio
 
 %normalize impulse response to 1
 x=x./max(x);
@@ -29,23 +32,23 @@ disp("Calculating and normalizing FFT...")
 T = 1/Fs;             % Sampling period
 L = length(x);        % Length of signal
 t = (0:L-1)*T;        % Time vector
-X = fft(x);           % Fourier transform
-X=abs(X);
+X = fft(x,fftSize);           % Fourier transform
+
+X_abs=abs(X);
 %plot abs fft(x)
 subplot(numberOfPlots1,1,2)
-semilogx(X)
-title("abs(X)")
+semilogx(X_abs)
+title("X abs")
 axis padded
 
-X=mag2db(X);
-indexOf1000Hz = floor(length(X)/2/((Fs/2)/1000));
-normFactor = X(indexOf1000Hz);
-X=X-normFactor;
-X_norm=X;
+X_db=mag2db(X_abs);
+indexOf1000Hz = floor(length(X_db)/2/((fftSize/2)/1000));
+normFactor = X_db(indexOf1000Hz);
+X_db_norm=X_db-normFactor;
 %plot normalized Y
 subplot(numberOfPlots1,1,3)
-semilogx(X)
-title("normalized mag2db(X))")
+semilogx(X_db_norm)
+title("X db norm")
 axis padded
 
 %idx = abs(Y)>(normFactor*maxBoostPowerdB);
@@ -53,94 +56,60 @@ axis padded
 disp("FFT calculation and normalization done")
 
 disp("Spectrum manipulation...")
-X=X.*-1;
-X_inverted=X;
-%X=X-min(X);
+X_db_inverted=-X_db_norm;
 %plot negated Y
 subplot(numberOfPlots1,1,4)
-semilogx(X)
-title("normalized and negated Y")
+semilogx(X_db_inverted)
+title("X inverted")
 axis padded
 
-indexOfLowHz = floor(length(X)/2/((Fs/2)/speakerMinFreq));
-indexOfHighHz = floor(length(X)/2/((Fs/2)/speakerMaxFreq));
-%Y(1:indexOfLowHz)=0;
-%Y(end-indexOfLowHz:end)=0;
+%indexOfLowHz = floor(length(X_db_inverted)/2/((Fs/2)/speakerMinFreq));
+%indexOfHighHz = floor(length(X_db_inverted)/2/((Fs/2)/speakerMaxFreq));
+%X_db_inverted(1:indexOfLowHz)=0;
+%X_db_inverted(end-indexOfLowHz:end)=0;
 
-%modified Y
+%modified X
 subplot(numberOfPlots1,1,5)
-semilogx(X)
-title("modified Y")
+%semilogx(X)
+title("modified X")
 axis padded
 
 disp("Spectrum manipulation done")
-
-%P2 = abs(Y/L);        % Power spectrum
-%P1 = P2(1:L/2+1);     % Single-sided spectrum
-%P1(2:end-1) = 2*P1(2:end-1);
-
-%f = Fs*(0:(L/2))/L;
-
-%subplot(5,1,2)
-%plot(f,P1)
-%title("Single-Sided Amplitude Spectrum of X(t)")
-%xlabel("f (Hz)")
-%ylabel("|P1(f)|")
-
-%subplot(6,1,4)
-%indexOf1000Hz = floor(length(P1)*(1000/(Fs/2)));
-%normFactor = P1(indexOf1000Hz);
-%P1 = P1/normFactor;
-%loglog(f,P1) %plot amplitude spectrum
-%title("Single-Sided Amplitude Spectrum of X(t), log")
-%xlabel("f (Hz)")
-%ylabel("|P1(f)|")
-%xlim([speakerMinFreq speakerMaxFreq])
-%axis padded
-
-%disp("Smoothing spectrum...")
-%P1_smoothed = smoothSpectrum(P1,f',30);
-%P1_smoothed=P1;
-%disp("Smoothing spectrum done")
-%process spectrum
-%idx = P1_smoothed<(1/maxBoostPowerdB);
-%P1_smoothed(idx) = 1/maxBoostPowerdB; %raise low values
-%P1_smoothed(1:floor(length(P1)*(speakerMinFreq/(Fs/2))))=0; %set values below speaker freq response to zero
-%P1_smoothed(floor(length(P1)*(speakerMaxFreq/(Fs/2))):end)=0; %set values above speaker freq response to zero
-
-%plot processed spectrum
-%subplot(6,1,5)
-%loglog(f,P1_smoothed) %plot amplitude spectrum
-%title("Single-Sided Amplitude Spectrum of X(t), log, processed")
-%xlabel("f (Hz)")
-%ylabel("|P1(f)|")
-%xlim([speakerMinFreq speakerMaxFreq])
-%axis padded
 
 disp("Calculating IFFT...")
 %y = ifft(P1_smoothed);
 %f2 = Fs*(0:L-1)/L;
 %Y_smoothed = smoothSpectrum(abs(Y),f2',30);
-X_norm=db2mag(X_norm);
-x_norm=ifft(X_norm);
-y=ifft(X);
-y=y.*(1/max(y));
+
+subplot(numberOfPlots1,1,7)
+zeroresponse=X_db_norm+X_db_inverted;
+plot(zeroresponse)
+title("X db norm.*X inverted")
+
+X_norm_mag=db2mag(X_db_norm);
+X_inverted_mag=db2mag(X_db_inverted);
+
+x_resp_norm=ifft(X_norm_mag);
+x_resp_mod=ifft(X_inverted_mag);
+x_resp_mod=x_resp_mod./max(x_resp_norm);
+x_resp_mod=x_resp_mod;
+x_resp_mod(length(x_resp_mod)/2:end)=0; %delete right half of unstable impulse response
+%y=y.*(1/max(y));
 %y=y.*(1/max(y));
 %y=0.00001.*y;
 %y=y(1:2500);
 disp("IFFT calculation done")
 subplot(numberOfPlots1,1,6)
-plot(y)
-title("Modified speaker impulse response")
-subplot(numberOfPlots1,1,7)
-plot(X-X_inverted)
-title("X-X_inverted")
+plot(x_resp_mod)
+title("Modified speaker impulse response, x resp mod")
 
 %calculate result audio
 disp("Calculating result...")
-test_impulse = [conv(test(:,1),x_norm) conv(test(:,2),x_norm)]; %conv testaudio with measured freq response
+test_impulse = [conv(test(:,1),x_resp_norm) conv(test(:,2),x_resp_norm)]; %conv testaudio with measured freq response
 test_impulse = test * (1/max(max(test)));
-test_corrected = [conv(test_impulse(:,1),y) conv(test_impulse(:,2),y)]; %conv again with room correction filter
+test_impulse_corrected = [conv(test_impulse(:,1),x_resp_mod) conv(test_impulse(:,2),x_resp_mod)]; %conv again with room correction filter
+test_impulse_corrected = test_impulse_corrected * (1/max(max(test_impulse_corrected)));
+test_corrected = [conv(test(:,1),x_resp_mod) conv(test(:,2),x_resp_mod)]; %conv again with room correction filter
 test_corrected = test_corrected * (1/max(max(test_corrected)));
 disp("Result calculation done")
 
@@ -172,9 +141,9 @@ player = audioplayer(test_impulse,fs_test); %init player
 play(player) %play
 waitfor(player,'Running') %wait until done
 disp("Audio convoluted with measured response played")
-disp("Play audio convoluted and then fixed...")
+disp("Play fixed audio...")
 %play modified sound
 player = audioplayer(test_corrected,fs_test); %init player
 play(player) %play
 waitfor(player,'Running') %wait until done
-disp("Convoluted and fixed audio played")
+disp("Fixed audio played")
