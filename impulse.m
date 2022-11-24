@@ -104,7 +104,7 @@ disp("Calculating IFFT...")
 %Y_smoothed = smoothSpectrum(abs(Y),f2',30);
 y=ifft(Y);
 %y=y.*(1/max(y));
-y=0.00001.*y;
+y=0.000001.*y;
 y=y(1:2500);
 disp("IFFT calculation done")
 subplot(5,1,5)
