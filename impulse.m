@@ -14,11 +14,11 @@ maxBoostPower=3; %Maximum multiplier for quiet frequencies
 %end parameters
 [x, Fs] = audioread("speaker-front-impulse.wav");
 %x = x.^-1;
-[test, fs_test] = audioread('testaudio/sweep.wav');
-test=repmat(test,1,2);
+[test, fs_test] = audioread('testaudio/testaudio.wav');
+%test=repmat(test,1,2);
 %t = 0:1/1e3:4;
 %test = chirp(t,40,4,4000);
-%test = test(1:100000,:);
+test = test(1:80000,:);
 subplot(5,1,1)
 plot(x)
 title("Speaker impulse response")
@@ -41,8 +41,8 @@ normFactor = abs(normFactor);
 
 idx = abs(Y)>(normFactor*maxBoostPower);
 Y(idx) = normFactor*maxBoostPower;
-test1 = real(Y(50600:80400));
-test2 = imag(Y(50600:80400));
+%test1 = real(Y(50600:80400));
+%test2 = imag(Y(50600:80400));
 %Y(50600:80400)=test2*1i-0.5*test1;
 %Y(50600:80400)=0.99*Y(50600:80400);
 %Y=Y(65537:end);
@@ -113,7 +113,8 @@ title("Modified speaker impulse response")
 
 %calculate result audio
 disp("Calculating result...")
-test = [conv(x,test(:,1)) conv(x,test(:,2))];
+test2 = [conv(x,test(:,1)) conv(x,test(:,2))]; %conv testaudio with measured freq response
+test2 = test * (1/max(max(test)));
 result = [conv(y,test(:,1)) conv(y,test(:,2))];
 result = result * (1/max(max(result)));
 result = bandpass(result,[speakerMinFreq speakerMaxFreq],Fs);
@@ -126,7 +127,7 @@ L = 11;
 g = bartlett(M);
 Ndft = 1024;
 
-spectrogram(test(:,1),g,L,Ndft,fs_test)
+spectrogram(test2(:,1),g,L,Ndft,fs_test)
 subplot(2,1,2)
 M = 200;
 L = 11;
