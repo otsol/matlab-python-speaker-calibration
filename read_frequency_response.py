@@ -80,8 +80,8 @@ db_vals = np.ndarray.flatten(c[eq_indexes])
 db_max_gain = np.max(db_vals)
 
 with open("APO_config.txt", "w+") as f:
-    f.write(f"Preamp: -{db_max_gain} dB\r\n")
+    f.write(f"Preamp: -{db_max_gain/5} dB\r\n")
     for index, freq in enumerate(eq_frequencies):
-        f.write(f"Filter: ON PK Fc {freq} Hz Gain {db_vals[index]} dB Q 2\r\n")
+        f.write(f"Filter: ON PK Fc {freq} Hz Gain {db_vals[index]/5} dB Q 2\r\n")
 
 print("Hello world")
