@@ -42,14 +42,14 @@ def powspace2(start, stop, power, num) -> np.ndarray:
 
 # choose 32 points for creating an EQ profile
 start = 32.0
-end = 20000.0
+end = 18000.0
 # eq_points = np.logspace(6, )
 eq_frequencies = powspace2(start, end, 2, 32)
 eq_frequencies = np.floor(eq_frequencies).astype(int)
 print(eq_frequencies)
 
 start_index = int(int(len(c) / 2) * (start / 20000))
-end_index = int(len(c) / 2)
+end_index = int(int(len(c) / 2) * (end / 20000))
 print(f'Start:{start_index}, End:{end_index}')
 # eq_points = np.logspace(6, )
 eq_indexes = powspace2(start_index, end_index, 2, 32)
@@ -59,7 +59,7 @@ plt.figure(figsize=(8, 2), dpi=160)
 plt.plot(eq_indexes)
 plt.show()
 
-db_vals = c[eq_indexes]
+db_vals = np.ndarray.flatten(c[eq_indexes])
 db_max_gain = np.max(db_vals)
 
 with open("APO_config.txt", "w+") as f:
