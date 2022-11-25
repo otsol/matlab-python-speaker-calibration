@@ -111,10 +111,14 @@ title("Modified speaker impulse response, x resp mod")
 disp("Calculating result...")
 test_impulse = [conv(test(:,1),x_resp_norm) conv(test(:,2),x_resp_norm)]; %conv testaudio with measured freq response
 test_impulse = test_impulse * (1/max(max(test_impulse)));
-test_impulse_corrected = [conv(test_impulse(:,1),x_resp_mod) conv(test_impulse(:,2),x_resp_mod)]; %conv again with room correction filter
-test_impulse_corrected = test_impulse_corrected * (1/max(max(test_impulse_corrected)));
+test_impulse = test_impulse(1:length(test))';
+
+%test_impulse_corrected = [conv(test_impulse(:,1),x_resp_mod) conv(test_impulse(:,2),x_resp_mod)]; %conv again with room correction filter
+%test_impulse_corrected = test_impulse_corrected * (1/max(max(test_impulse_corrected)));
+
 test_corrected = [conv(test(:,1),x_resp_mod) conv(test(:,2),x_resp_mod)]; %conv again with room correction filter
 test_corrected = test_corrected * (1/max(max(test_corrected)));
+test_corrected = test_corrected(1:length(test))';
 disp("Result calculation done")
 
 M = 200;
@@ -125,13 +129,13 @@ Ndft = 1024;
 figure(2);
 subplot(3,1,1)
 spectrogram(test(:,1),g,L,Ndft,fs_test)
-title("Original audio")
+title("Original audio, test")
 subplot(3,1,2)
 spectrogram(test_impulse(:,1),g,L,Ndft,fs_test)
-title("Original audio convoluted with measured and normalized impulse response")
+title("Original audio convoluted with measured and normalized impulse response, test impulse")
 subplot(3,1,3)
 spectrogram(test_corrected(:,1),g,L,Ndft,fs_test)
-title("Response fixed audio")
+title("Response fixed audio, test conv with correction filt, test corrected")
 
 disp("Play original audio...")
 %play original sound
