@@ -14,10 +14,15 @@ parser.add_argument('sampling_frequency', metavar="Fs", type=int,
                     help="Give sampling frequency Fs (float)")
 parser.add_argument("file_name", metavar="file", type=str, action="store",
                     help="Give file name of frequency response CSV file")
+parser.add_argument("eq_strength", metavar="EQStrength", type=float,
+                    help="Give strength of output EQ filter (float), range 0-1, larger number=more strongly altered "
+                         "response")
 args = parser.parse_args()
 
 # set sampling frequency from 2nd command line argument
 Fs = args.sampling_frequency
+# set filter intensity from 3rd command line argument
+EQStrength = args.eq_strength
 
 # empty list for reading csv lines
 a: List[float] = []
@@ -80,8 +85,8 @@ db_vals = np.ndarray.flatten(c[eq_indexes])
 db_max_gain = np.max(db_vals)
 
 with open("APO_config.txt", "w+") as f:
-    f.write(f"Preamp: -{db_max_gain/5} dB\r\n")
+    f.write(f"Preamp: -{db_max_gain*EQStrength} dB\r\n")
     for index, freq in enumerate(eq_frequencies):
-        f.write(f"Filter: ON PK Fc {freq} Hz Gain {db_vals[index]/5} dB Q 2\r\n")
+        f.write(f"Filter: ON PK Fc {freq} Hz Gain {db_vals[index]*EQStrength} dB Q 2\r\n")
 
 print("Hello world")

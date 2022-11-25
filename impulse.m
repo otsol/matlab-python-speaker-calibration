@@ -57,7 +57,6 @@ disp("FFT calculation and normalization done")
 
 disp("Spectrum manipulation...")
 X_db_inverted=-X_db_norm;
-writematrix(X_db_inverted, "X_db_inverted.csv")
 %plot negated Y
 subplot(numberOfPlots1,1,4)
 semilogx(X_db_inverted)
@@ -75,6 +74,10 @@ subplot(numberOfPlots1,1,5)
 %semilogx(X)
 title("modified X")
 axis padded
+
+writematrix(X_db_inverted, "X_db_inverted.csv") %write inverted response in db-scale to a file
+%pyrunfile("createAPOConfig.py ", "Fs", "X_db_inverted.csv", "0.2");
+%system("createAPOConfig.py 48000 X_db_inverted.csv 0.2");
 
 disp("Spectrum manipulation done")
 
