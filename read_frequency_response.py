@@ -1,14 +1,27 @@
 import csv
 import math
+import os
 from typing import List
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
-Fs = 48000
+parser = argparse.ArgumentParser(description="Create Equalizer APO config from frequency"
+                                             "response CSV")
+parser.add_argument('sampling_frequency', metavar="Fs", type=int,
+                    help="Give sampling frequency Fs (float)")
+parser.add_argument("file_name", metavar="file", type=str, action="store",
+                    help="Give file name of frequency response CSV file")
+
+args = parser.parse_args()
+
+Fs = args.sampling_frequency
 
 a: List[float] = []
 # open file
-with open('X_db_inverted.csv', newline='\n') as csvfile:
+script_path = os.path.dirname(os.path.abspath(__file__))
+print(os.path.join(script_path, args.file_name))
+with open(os.path.join(script_path, args.file_name), newline='\n') as csvfile:
     x_reader = csv.reader(csvfile, delimiter=' ')
     for row in x_reader:
         print(', '.join(row))
