@@ -63,18 +63,20 @@ def powspace(start, stop, power, num) -> np.ndarray:
     return np.power(power, np.linspace(start, stop, num=num))
 
 
-# choose 32 points for creating an EQ profile
+# choose filterlength points for creating an EQ profile
+filterlength = 256
 start = 32.0
-end = 18000.0
-eq_frequencies = powspace(start, end, 2, 32)
+end = 20000.0
+eq_frequencies = powspace(start, end, 2, filterlength)
 eq_frequencies = np.floor(eq_frequencies).astype(int)
+print("eq_frequencies")
 print(eq_frequencies)
 
 start_index = int(int(len(c) / 2) * (start / 20000))
 end_index = int(int(len(c) / 2) * (end / 20000))
 print(f'Start:{start_index}, End:{end_index}')
 # eq_points = np.logspace(6, )
-eq_indexes = powspace(start_index, end_index, 2, 32)
+eq_indexes = powspace(start_index, end_index, 2, filterlength)
 eq_indexes = np.floor(eq_indexes).astype(int)
 print(eq_indexes)
 plt.figure(figsize=(8, 2), dpi=160)
@@ -85,8 +87,6 @@ db_vals = np.ndarray.flatten(c[eq_indexes])
 db_max_gain = np.max(db_vals)
 
 with open("APO_config.txt", "w+") as f:
-    f.write(f"Preamp: -{db_max_gain*EQStrength} dB\r\n")
+    f.write(f"Preamp: -{round(db_max_gain*EQStrength,2)} dB\r\n")
     for index, freq in enumerate(eq_frequencies):
-        f.write(f"Filter: ON PK Fc {freq} Hz Gain {db_vals[index]*EQStrength} dB Q 2\r\n")
-
-print("Hello world")
+        f.write(f"Filter: ON PK Fc {freq} Hz Gain {round(db_vals[index]*EQStrength,2)} dB Q 33\n")
