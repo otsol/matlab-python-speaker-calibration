@@ -65,15 +65,17 @@ def powspace(start, stop, power, num) -> np.ndarray:
 
 # choose filterlength points for creating an EQ profile
 filterlength = 256
-start = 32.0
-end = 20000.0
+REW_multiply_constant = 20000 / 24000  # REW's generated frequency response goes up to mic samplerate/2=24000hz,
+# so have to multiply the frequencies to align them correctly
+start = 53.0 * REW_multiply_constant
+end = 20000.0 * REW_multiply_constant
 eq_frequencies = powspace(start, end, 2, filterlength)
 eq_frequencies = np.floor(eq_frequencies).astype(int)
 print("eq_frequencies")
 print(eq_frequencies)
 
-start_index = int(int(len(c) / 2) * (start / 20000))
-end_index = int(int(len(c) / 2) * (end / 20000))
+start_index = int(int(len(c)) * (start / 20000))
+end_index = int(int(len(c)) * (end / 20000) - 1)
 print(f'Start:{start_index}, End:{end_index}')
 # eq_points = np.logspace(6, )
 eq_indexes = powspace(start_index, end_index, 2, filterlength)
@@ -86,7 +88,8 @@ plt.show()
 db_vals = np.ndarray.flatten(c[eq_indexes])
 db_max_gain = np.max(db_vals)
 
-with open("APO_config.txt", "w+") as f:
-    f.write(f"Preamp: -{round(db_max_gain*EQStrength,2)} dB\r\n")
+with open("APO_config_Xtreme3_OK18_measurement2_256_fixed.txt", "w+") as f:
+    f.write(f"Preamp: -{math.ceil(db_max_gain * EQStrength)} dB\r\n")
     for index, freq in enumerate(eq_frequencies):
-        f.write(f"Filter: ON PK Fc {freq} Hz Gain {round(db_vals[index]*EQStrength,2)} dB Q 33\n")
+        f.write(
+            f"Filter: ON PK Fc {math.floor(freq * (1 / REW_multiply_constant))} Hz Gain {min(round(db_vals[index] * EQStrength, 2), 10)} dB Q 33.33\n")

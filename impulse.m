@@ -7,7 +7,7 @@ clc;
 close all;
 
 %[x, Fs] = audioread("speaker-front-impulse.wav");
-[x, Fs] = audioread("inf_beta50_couchsit_impulse.wav");
+[x, Fs] = audioread("Impulse_responses/sasp_2022_eq_jblxtreme3_11122022_measurement2.wav");
 [test, fs_test] = audioread('testaudio/testaudio.wav');
 test = test(1:80000,:); %shorten test audio
 
@@ -15,13 +15,13 @@ test = test(1:80000,:); %shorten test audio
 speakerMinFreq=53; %Minimum frequency speaker is capable of playing
 speakerMaxFreq=20000; %Maximum frequency speaker is capable of playing
 maxBoostPowerdB=3; %Maximum multiplier for quiet frequencies
-numberOfPlots1=8;
+numberOfPlots1=7;
 fftSize=length(x);
 %end parameters
 
 %normalize impulse response to 1
 x=x./max(x);
-x = circshift(x, -47950);
+%x = circshift(x, -47950);
 
 subplot(numberOfPlots1,1,1)
 plot(x)
@@ -51,8 +51,6 @@ semilogx(X_db_norm)
 title("X db norm")
 axis padded
 
-%idx = abs(Y)>(normFactor*maxBoostPowerdB);
-%Y(idx) = normFactor*maxBoostPowerdB;
 disp("FFT calculation and normalization done")
 
 disp("Spectrum manipulation...")
@@ -60,33 +58,18 @@ X_db_inverted=-X_db_norm;
 %plot negated Y
 subplot(numberOfPlots1,1,4)
 semilogx(X_db_inverted)
-
 title("X inverted")
 axis padded
 
-%indexOfLowHz = floor(length(X_db_inverted)/2/((Fs/2)/speakerMinFreq));
-%indexOfHighHz = floor(length(X_db_inverted)/2/((Fs/2)/speakerMaxFreq));
-%X_db_inverted(1:indexOfLowHz)=0;
-%X_db_inverted(end-indexOfLowHz:end)=0;
-
-%modified X
-subplot(numberOfPlots1,1,5)
-%semilogx(X)
-title("modified X")
-axis padded
-
-writematrix(X_db_inverted, "X_db_inverted.csv") %write inverted response in db-scale to a file
+%Write csv for Python script
+writematrix(X_db_inverted(1:floor(131072/2)), "Matlab_output/X_db_inverted_Xtreme3_OK18.csv") %write inverted response in db-scale to a file
+%commands for later Matlab versions, R2020b and older don't support pyrunfile
 %pyrunfile("createAPOConfig.py ", "Fs", "X_db_inverted.csv", "0.2");
 %system("createAPOConfig.py 48000 X_db_inverted.csv 0.2");
-
 disp("Spectrum manipulation done")
-
 disp("Calculating IFFT...")
-%y = ifft(P1_smoothed);
-%f2 = Fs*(0:L-1)/L;
-%Y_smoothed = smoothSpectrum(abs(Y),f2',30);
 
-subplot(numberOfPlots1,1,8)
+subplot(numberOfPlots1,1,7)
 zeroresponse=X_db_norm+X_db_inverted;
 plot(zeroresponse)
 title("X db norm.*X inverted")
@@ -96,17 +79,12 @@ X_inverted_mag=db2mag(X_db_inverted);
 
 x_resp_norm=ifft(X_norm_mag);
 x_resp_mod=ifft(X_inverted_mag);
-%x_resp_mod=x_resp_mod./max(x_resp_norm);
 x_resp_mod(length(x_resp_mod)/2:end)=0; %delete right half of unstable impulse response
-%y=y.*(1/max(y));
-%y=y.*(1/max(y));
-%y=0.00001.*y;
-%y=y(1:2500);
 disp("IFFT calculation done")
-subplot(numberOfPlots1,1,6)
+subplot(numberOfPlots1,1,5)
 plot(x_resp_norm)
 title("Normalized speaker impulse response, x resp norm")
-subplot(numberOfPlots1,1,7)
+subplot(numberOfPlots1,1,6)
 plot(x_resp_mod)
 title("Modified speaker impulse response, x resp mod")
 
@@ -115,9 +93,6 @@ disp("Calculating result...")
 test_impulse = [conv(test(:,1),x_resp_norm) conv(test(:,2),x_resp_norm)]; %conv testaudio with measured freq response
 test_impulse = test_impulse * (1/max(max(test_impulse)));
 test_impulse = test_impulse(1:length(test))';
-
-%test_impulse_corrected = [conv(test_impulse(:,1),x_resp_mod) conv(test_impulse(:,2),x_resp_mod)]; %conv again with room correction filter
-%test_impulse_corrected = test_impulse_corrected * (1/max(max(test_impulse_corrected)));
 
 test_corrected = [conv(test(:,1),x_resp_mod) conv(test(:,2),x_resp_mod)]; %conv again with room correction filter
 test_corrected = test_corrected * (1/max(max(test_corrected)));
